@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>SafeWalk | Campus Safety App</title>
+<!-- hanishannani@graduate.utm.my -->
+<style>
+    body {
+        margin: 0;
+        font-family: 'Segoe UI', Tahoma, sans-serif;
+        background: #f2f4f8;
+        color: #333;
+    }
+
+    header {
+        background: linear-gradient(135deg, #1e3c72, #2a5298);
+        color: white;
+        padding: 40px 20px;
+        text-align: center;
+    }
+
+    header h1 {
+        font-size: 36px;
+        margin-bottom: 10px;
+    }
+
+    header p {
+        font-size: 16px;
+        opacity: 0.9;
+    }
+
+    section {
+        padding: 30px 20px;
+        max-width: 900px;
+        margin: auto;
+    }
+
+    h2 {
+        color: #1e3c72;
+        margin-bottom: 15px;
+    }
+
+    .card {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 25px;
+        box-shadow: 0 6px 15px rgba(0,0,0,0.08);
+        transition: transform 0.2s;
+    }
+
+    .card:hover {
+        transform: translateY(-4px);
+    }
+
+    label {
+        font-weight: 600;
+    }
+
+    input, textarea {
+        width: 100%;
+        padding: 10px;
+        margin-top: 6px;
+        margin-bottom: 15px;
+        border-radius: 6px;
+        border: 1px solid #ccc;
+        font-size: 14px;
+    }
+
+    button {
+        background: #1e3c72;
+        color: white;
+        padding: 12px 18px;
+        border: none;
+        border-radius: 8px;
+        font-size: 15px;
+        cursor: pointer;
+    }
+
+    button:hover {
+        background: #16305c;
+    }
+
+    .sos-section {
+        background: #ffeaea;
+        border: 2px solid #e74c3c;
+    }
+
+    .sos-btn {
+        background: #e74c3c;
+        width: 100%;
+        font-size: 18px;
+        padding: 15px;
+        margin-top: 10px;
+    }
+
+    .sos-btn:hover {
+        background: #c0392b;
+    }
+
+    ul {
+        padding-left: 20px;
+    }
+
+    ul li {
+        margin-bottom: 8px;
+    }
+
+    footer {
+        background: #1e3c72;
+        color: white;
+        text-align: center;
+        padding: 15px;
+        font-size: 14px;
+    }
+
+    .icon {
+        font-size: 20px;
+        margin-right: 6px;
+    }
+</style>
+</head>
+
+<body>
+
+<header>
+    <h1>🚶‍♀️ SafeWalk</h1>
+    <p>Your Campus Safety Companion | Walk with Confidence</p>
+</header>
+
+<!-- Report Form -->
+<section>
+    <h2>🚩 Report Unsafe Area</h2>
+    <div class="card">
+        <form id="reportForm">
+            <label>📍 Location</label>
+            <input type="text" name="location" placeholder="e.g. Dark pathway near Library" required>
+
+            <label>📝 Description</label>
+            <textarea name="description" rows="4" placeholder="Describe the safety issue clearly" required></textarea>
+
+            <label>🖼 Upload Image (Optional)</label>
+            <input type="file" id="fileInput" name="image" accept="image/*">
+            <button type="submit">Submit Report</button>
+        </form>
+    </div>
+</section>
+
+<!-- Emergency SOS -->
+<section>
+    <h2>🆘 Emergency SOS</h2>
+    <div class="card sos-section">
+        <p><strong>Feeling unsafe?</strong> Tap the SOS button below to immediately call UTM Security.</p>
+        <a href="tel:+6075333013">
+            <button class="sos-btn">📞 CALL UTM SECURITY</button>
+        </a>
+    </div>
+</section>
+
+<!-- Safety Tips -->
+<section>
+    <h2>🛡 Safety Tips</h2>
+    <div class="card">
+        <ul>
+            <li>Stay in well-lit areas at night</li>
+            <li>Walk with friends whenever possible</li>
+            <li>Limit phone usage while walking</li>
+            <li>Inform someone before walking alone</li>
+        </ul>
+    </div>
+</section>
+
+<!-- Emergency Contacts -->
+<section>
+    <h2>📞 Emergency Contacts</h2>
+    <div class="card">
+        <p><strong>UTM Security:</strong> +607-533 3013</p>
+        <p><strong>Police:</strong> 999</p>
+        <p><strong>Ambulance:</strong> 999</p>
+    </div>
+</section>
+
+<!-- Campus Safety Awareness -->
+<section>
+    <h2>ℹ Campus Safety Awareness</h2>
+    <div class="card">
+        <p>
+            A safe campus is a shared responsibility.  
+            Reporting unsafe areas helps authorities respond faster and ensures a safer environment for all students.
+        </p>
+    </div>
+</section>
+
+<footer>
+    <p>Supporting SDG 11: Sustainable Cities & Communities</p>
+</footer>
+
+<!-- EmailJS Script -->
+ <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
+<script>
+    (function () {
+        emailjs.init("5qOXlnI9fT05r5sya"); // ⚠️ Put your actual Public Key here
+    })();
+
+    document.getElementById("reportForm").addEventListener("submit", function (e) {
+        e.preventDefault();
+
+        const btn = document.querySelector("button[type='submit']");
+        const originalText = btn.innerText;
+        btn.innerText = "Processing Image...";
+
+        const fileInput = document.getElementById("fileInput");
+        const file = fileInput.files[0];
+
+        // 1. If no file, send immediately
+        if (!file) {
+            sendEmail(null, btn, originalText);
+            return;
+        }
+
+        // 2. If file exists, COMPRESS IT first
+        compressImage(file, 300, 0.5).then((compressedBase64) => {
+            // Check if it's still too big (approx check)
+            if (compressedBase64.length > 50000) {
+                alert("⚠️ Image is still too large. Please upload a smaller image.");
+                btn.innerText = originalText;
+            } else {
+                btn.innerText = "Sending...";
+                sendEmail(compressedBase64, btn, originalText);
+            }
+        }).catch(err => {
+            console.error(err);
+            alert("Error processing image.");
+            btn.innerText = originalText;
+        });
+    });
+
+    function sendEmail(base64File, btn, originalText) {
+        const params = {
+            location: document.querySelector('[name="location"]').value,
+            description: document.querySelector('[name="description"]').value,
+            // If no file, send empty string so template doesn't break
+            attachment: base64File ? base64File : "" 
+        };
+
+        emailjs.send("service_p3r6do4", "template_py0ua2q", params).then(
+            () => {
+                alert("✅ Report sent successfully!");
+                document.getElementById("reportForm").reset();
+                btn.innerText = originalText;
+            },
+            (error) => {
+                alert("❌ Failed to send: " + JSON.stringify(error));
+                btn.innerText = originalText;
+            }
+        );
+    }
+
+    // 🔧 Helper function to shrink image
+    function compressImage(file, maxWidth, quality) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = (event) => {
+                const img = new Image();
+                img.src = event.target.result;
+                img.onload = () => {
+                    const canvas = document.createElement("canvas");
+                    let width = img.width;
+                    let height = img.height;
+
+                    // Resize logic
+                    if (width > maxWidth) {
+                        height *= maxWidth / width;
+                        width = maxWidth;
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+
+                    const ctx = canvas.getContext("2d");
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    // Compress to JPEG with reduced quality
+                    const dataUrl = canvas.toDataURL("image/jpeg", quality);
+                    resolve(dataUrl);
+                };
+                img.onerror = (error) => reject(error);
+            };
+            reader.onerror = (error) => reject(error);
+        });
+    }
+</script>
+</body>
+</html>
